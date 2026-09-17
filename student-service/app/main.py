@@ -89,7 +89,7 @@ app.include_router(students.router)
 def root() -> dict[str, str]:
     return {
         "message": (
-            "KoalaTech University Student Service is running."
+            "KoalaTech University Student Service is running (8.1P CI test)."
         )
     }
 
