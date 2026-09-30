@@ -194,12 +194,13 @@ const Dashboard = () => {
         <Typography
           variant="h4"
           fontWeight={600}
+          color="primary.main"
         >
-          Dashboard
+          KoalaTech Dashboard 🐨
         </Typography>
 
         <Typography color="text.secondary">
-          Welcome to KoalaTech University
+          Continuous Deployment is live — Task 9.3C demo
         </Typography>
       </Box>
 
