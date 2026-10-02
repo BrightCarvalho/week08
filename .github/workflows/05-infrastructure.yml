@@ -7,6 +7,7 @@ on:
       - feature/homepage-update
     paths:
       - "terraform/**"
+      - "kubernetes/local/**"
       - ".github/workflows/05-infrastructure.yml"
   workflow_dispatch:
 
@@ -51,3 +52,38 @@ jobs:
           kubectl -n monitoring rollout status deployment/monitoring-grafana --timeout=300s
           kubectl get pods -n monitoring
           kubectl get svc -n monitoring
+
+      - name: Build and load application images into kind
+        working-directory: ${{ github.workspace }}
+        run: |
+          for s in frontend user-service student-service lecturer-service course-service enrollment-service; do
+            docker build -t koalatech-$s:local ./$s
+            kind load docker-image koalatech-$s:local --name koalatech
+          done
+
+      - name: Create namespace and secrets
+        working-directory: ${{ github.workspace }}
+        run: |
+          kubectl apply -f kubernetes/local/01-namespace.yaml
+          kubectl create secret generic postgres-secret --namespace production \
+            --from-literal=POSTGRES_USER=postgres \
+            --from-literal=POSTGRES_PASSWORD=postgres
+          kubectl create secret generic application-secret --namespace production \
+            --from-literal=POSTGRES_USER=postgres \
+            --from-literal=POSTGRES_PASSWORD=postgres \
+            --from-literal=JWT_SECRET_KEY=koalatech-local-secret \
+            --from-literal=DEFAULT_ADMIN_USERNAME=admin \
+            --from-literal=DEFAULT_ADMIN_EMAIL=admin@koalatech.edu.au \
+            --from-literal=DEFAULT_ADMIN_PASSWORD=AdminPassword123! \
+            --from-literal=AZURE_STORAGE_CONNECTION_STRING=
+
+      - name: Deploy application
+        working-directory: ${{ github.workspace }}
+        run: |
+          kubectl apply -f kubernetes/local/
+          kubectl wait --for=condition=available deployment --all -n production --timeout=600s
+
+      - name: Show application resources
+        run: |
+          kubectl get pods -n production
+          kubectl get services -n production
