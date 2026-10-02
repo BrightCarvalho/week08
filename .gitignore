@@ -199,4 +199,8 @@ cython_debug/
 node_modules/.terraform/
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
+
+terraform/.terraform/
+*.tfstate
+*.tfstate.*
+tfplan

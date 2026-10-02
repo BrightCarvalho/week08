@@ -1,0 +1,47 @@
+name: 05 - Infrastructure (Terraform)
+
+on:
+  push:
+    branches:
+      - main
+      - feature/homepage-update
+    paths:
+      - "terraform/**"
+      - ".github/workflows/05-infrastructure.yml"
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: Terraform fmt, validate, plan, apply
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform fmt
+        run: terraform fmt -check
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve tfplan
+
+      - name: Show Terraform-created cluster
+        run: |
+          kind export kubeconfig --name koalatech
+          kubectl get nodes -o wide
