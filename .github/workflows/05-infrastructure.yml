@@ -45,3 +45,9 @@ jobs:
         run: |
           kind export kubeconfig --name koalatech
           kubectl get nodes -o wide
+
+      - name: Verify Prometheus and Grafana
+        run: |
+          kubectl -n monitoring rollout status deployment/monitoring-grafana --timeout=300s
+          kubectl get pods -n monitoring
+          kubectl get svc -n monitoring
